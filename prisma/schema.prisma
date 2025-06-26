@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+
+  @@map("difficulty")
+}
+
+enum WorkoutStyle {
+  STRENGTH_TRAINING
+  HIIT
+  METABOLIC_CONDITIONING
+  CARDIO
+  MOBILITY
+  ACTIVE_RECOVERY
+
+  @@map("workout_style")
+}
+
+enum BodyFocus {
+  TOTAL
+  UPPER
+  LOWER
+  CORE
+  FULL_BODY
+
+  @@map("body_focus")
+}
+
+enum Equipment {
+  DUMBBELLS
+  MAT
+  BARBELL
+  BENCH
+  RESISTANCE_BAND
+  NONE
+
+  @@map("equipment")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  timezone      String?   @default("America/New_York")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  bannedAt      DateTime? @map("banned_at")
+  role          UserRole  @default(USER)
+
+  accounts         Account[]
+  sessions         Session[]
+  progress         UserProgress[]
+  favoriteWorkouts UserFavoriteWorkout[]
+  favoritePrograms UserFavoriteProgram[]
+
+  @@map("users")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String  @map("user_id")
+  type               String
+  provider           String
+  providerAccountId  String  @map("provider_account_id")
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  oauth_token_secret String?
+  oauth_token        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         Int      @id @default(autoincrement())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Instructor {
+  id          String    @id @default(cuid())
+  firstName   String
+  lastName    String?
+  bio         String?
+  credentials String?
+  programs    Program[]
+
+  @@map("instructors")
+}
+
+enum ProgramLength {
+  ONE_WEEK
+  TWO_WEEKS
+  THREE_WEEKS
+  FOUR_WEEKS
+  FIVE_WEEKS
+  SIX_WEEKS
+  TEN_WEEKS
+}
+
+model Program {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  length       ProgramLength
+  difficulty   Difficulty
+  equipment    Equipment[]
+  workoutTypes String[]
+  bodyFocus    BodyFocus
+
+  instructorId String
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+
+  workoutsInProgram WorkoutInProgram[]
+  progressRecords   UserProgress[]
+  favoriteBy        UserFavoriteProgram[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("programs")
+}
+
+model Workout {
+  id                String       @id @default(cuid())
+  title             String
+  videoUrl          String
+  durationInSeconds Int
+  style             WorkoutStyle
+  focusArea         String
+  equipment         Equipment[]
+  difficulty        Difficulty
+
+  favoritedBy UserFavoriteWorkout[]
+  inPrograms  WorkoutInProgram[]
+
+  @@map("workouts")
+}
+
+model WorkoutInProgram {
+  id         String @id @default(cuid())
+  programId  String
+  workoutId  String
+  dayNumber  Int
+  weekNumber Int
+
+  program Program @relation(fields: [programId], references: [id])
+  workout Workout @relation(fields: [workoutId], references: [id])
+
+  @@unique([programId, weekNumber, dayNumber])
+  @@map("workouts_in_programs")
+}
+
+model UserProgress {
+  id          String   @id @default(cuid())
+  completedAt DateTime @default(now())
+
+  userId    String
+  programId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  program Program @relation(fields: [programId], references: [id])
+
+  @@unique([userId, programId])
+  @@map("user_progress")
+}
+
+model UserFavoriteWorkout {
+  createdAt DateTime @default(now())
+
+  userId    String
+  workoutId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  workout Workout @relation(fields: [workoutId], references: [id])
+
+  @@id([userId, workoutId])
+  @@map("user_favorite_workouts")
+}
+
+model UserFavoriteProgram {
+  createdAt DateTime @default(now())
+
+  userId    String
+  programId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  program Program @relation(fields: [programId], references: [id])
+
+  @@id([userId, programId])
+  @@map("user_favorite_programs")
+}
