@@ -16,6 +16,13 @@ const eslintConfig = [
     'plugin:better-tailwindcss/recommended',
     'prettier',
   ),
+  {
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: 'src/app/globals.css',
+      },
+    },
+  },
 ]
 
 export default eslintConfig
