@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
@@ -6,18 +7,23 @@
 }
 
 @theme inline {
+  --color-primary: #068cef;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
 }
-
+/* 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   @apply text-foreground bg-background font-sans text-base;
+}
+
+a {
+  @apply transition-colors duration-150;
 }
