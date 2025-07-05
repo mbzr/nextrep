@@ -34,7 +34,7 @@ export const Button = ({
         `inline-flex h-10 flex-none cursor-pointer items-center justify-center rounded-md px-4 py-2 font-medium transition-colors md:h-12`,
         variantClasses[variant],
         className,
-        props.disabled && 'cursor-default opacity-50',
+        props.disabled && 'pointer-events-none cursor-default opacity-50',
       )}
       {...props}
     >
