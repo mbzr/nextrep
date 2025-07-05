@@ -60,7 +60,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
-  timezone      String?   @default("America/New_York")
+  timezone      String?   @default("Asia/Dubai")
   lastLoginAt   DateTime? @map("last_login_at")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
@@ -77,24 +77,26 @@ model User {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  oauth_token_secret String?
-  oauth_token        String?
+  id                       String  @id @default(cuid())
+  userId                   String  @map("user_id")
+  type                     String
+  provider                 String
+  providerAccountId        String  @map("provider_account_id")
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  oauth_token_secret       String?
+  oauth_token              String?
+  refresh_token_expires_in Int? // for github provider
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
@@ -103,6 +105,8 @@ model Session {
   userId       String   @map("user_id")
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model VerificationToken {
@@ -112,6 +116,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Instructor {
